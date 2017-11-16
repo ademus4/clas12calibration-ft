@@ -49,6 +49,7 @@ public class FTHodoHistograms {
     DetectorCollection<F1D> fQ1 = new DetectorCollection<F1D>();
     DetectorCollection<F1D> fQ2 = new DetectorCollection<F1D>();
     DetectorCollection<F1D> fQMIP = new DetectorCollection<F1D>();
+    DetectorCollection<F1D> fV = new DetectorCollection<F1D>();
     DetectorCollection<F1D> fV1 = new DetectorCollection<F1D>();
     DetectorCollection<F1D> fV2 = new DetectorCollection<F1D>();
     DetectorCollection<F1D> fVMIP = new DetectorCollection<F1D>();
@@ -65,7 +66,7 @@ public class FTHodoHistograms {
     //=================================
     //           CONSTANTS
     //=================================
-    boolean fitTwoPeaksV = false;
+    boolean fitTwoPeaksV = false; // 2 peaks should be default
     boolean fitTwoPeaksQ = false;
     // n is for nominal
     final double nStatus = 5.0;
@@ -407,13 +408,15 @@ public class FTHodoHistograms {
     }
 
     private void fitVNoise(int s, int l, int c, String fitOption) {
+        // fitting functions for the noise data
         if (testMode) {
             System.out.println(" Fitting V Noise (S,L,C) = ("
                                + s + "," + l + "," + c + ")");
         }
+        
         if (initFitVNoiseParameters(s, l, c, H_NOISE_V.get(s, l, c))) {
-            if (testMode) System.out.println(" Fitting fV1 ");
-            DataFitter.fit(fV1.get(s, l, c), H_NOISE_V.get(s, l, c), fitOption);
+            if (testMode) System.out.println(" Fitting fV ");
+            DataFitter.fit(fV.get(s, l, c), H_NOISE_V.get(s, l, c), fitOption);
             //         H_NOISE_V.get(s,l,c).
             //         fit(fV1.get(s,l,c),fitOption);
             if (this.fitTwoPeaksV) {
@@ -436,48 +439,53 @@ public class FTHodoHistograms {
     }
     private boolean initFitVNoiseParameters(int s, int l, int c, H1F H1) {
         if (testMode) System.out.println(" initFitVNoiseParameters start ");
+        
+        // initial params for the fit
         double ampl = H1.getBinContent(H1.getMaximumBin());
         double mean = H1.getMaximumBin();
         mean = mean * H1.getAxis().getBinWidth(2);
         mean = mean + H1.getAxis().min();
         double std = 0.5;
         double exp0 = H1.getBinContent(1) + H1.getBinContent(2);
+
         if (testMode) System.out.println(" initFitVNoiseParameters variables" + " initialised ");
+        
+        // only fit if sufficient number of values in dataset
         if (H1.getEntries() > 500) {
-            if (testMode)  System.out.println(" initFitVNoiseParameters "+ " setting fV1 parameters ");
-            fV1.add(s, l, c, new F1D("gaus+exp", "[amp]*gaus(x,[mean],[sigma])+[h]*exp([f])",
-                                     H1.getAxis().min(),
-                                     2.0 * nGain_mV));
-            // gaus
-            fV1.get(s, l, c).setParameter(0, ampl);
-            //fV1.get(s,l,c).setParameter(1, nGain_mV);
-            fV1.get(s, l, c).setParameter(1, mean);
-            fV1.get(s, l, c).setParameter(2, std);
-            // expo
-            fV1.get(s, l, c).setParameter(3, exp0);
-            fV1.get(s, l, c).setParameter(4, -0.2);
-            if (testMode) System.out.println(" initFitVNoiseParameters setting "+ " fV1 limits ");
-            // gaus
-            fV1.get(s, l, c).setParLimits(0, 0., ampl * 10);
-            fV1.get(s, l, c).setParLimits(1, H1.getAxis().min(), 2 * nGain_mV);
-            fV1.get(s, l, c).setParLimits(2, std / 2, std * 2.0);
-            // expo
-            fV1.get(s, l, c).setParLimits(3, 0.1 * exp0, 10.0 * exp0);
-            fV1.get(s, l, c).setParLimits(4, -0.1, -1.0);
-            if (testMode) System.out.println(" initFitVNoiseParameters setting " + " fV2 parameters ");
-            fV2.add(s, l, c, new F1D("gaus", "[amp]*gaus(x,[mean],[sigma])",1.5 * nGain_mV,3.0 * nGain_mV));
-            fV2.get(s, l, c).
-            setParameter(0, ampl / 3.0);
-            fV2.get(s, l, c).
-            setParameter(1, 2.0 * nGain_mV);
-            fV2.get(s, l, c).
-            setParameter(2, std);
-            if (testMode) System.out.println(" initFitVNoiseParameters setting"+ " fV2 limits ");
-            fV2.get(s, l, c).
-            setParLimits(0, 0, ampl);
-            fV2.get(s, l, c).
-            setParLimits(1,1.5 * nGain_mV,2.5 * nGain_mV);
-            fV2.get(s, l, c).setParLimits(2, 0., std * 4.0);
+            if (testMode)  System.out.println(" initFitVNoiseParameters "+ " setting fV parameters ");
+
+            // fitting function
+            fV.add(s, l, c, new F1D(
+                    "gaus+exp+gaus", 
+                    "[amp1]*gaus(x,[mean1],[sigma1])+[h]*exp([f])+[amp2]*gaus(x,[mean2],[sigma2])", 
+                    H1.getAxis().min(), 
+                    H1.getAxis().max()
+            ));
+            
+            // fit params 
+            fV.get(s, l, c).setParameter(0, ampl);
+            fV.get(s, l, c).setParameter(1, mean);
+            fV.get(s, l, c).setParameter(2, std);
+            
+            fV.get(s, l, c).setParameter(3, exp0);
+            fV.get(s, l, c).setParameter(4, -0.2);
+            
+            fV.get(s, l, c).setParameter(5, ampl / 2);
+            fV.get(s, l, c).setParameter(6, mean * 2);
+            fV.get(s, l, c).setParameter(7, std);
+            
+            // fit limits            
+            fV.get(s, l, c).setParLimits(0, 0., ampl * 10);
+            fV.get(s, l, c).setParLimits(1, H1.getAxis().min(), 2 * nGain_mV);
+            fV.get(s, l, c).setParLimits(2, std / 2, std * 2.0);
+
+            fV.get(s, l, c).setParLimits(3, 0.1 * exp0, 10.0 * exp0);
+            fV.get(s, l, c).setParLimits(4, -0.1, -1.0);
+            
+            fV.get(s, l, c).setParLimits(5, 0., ampl);
+            fV.get(s, l, c).setParLimits(6, 1.5 * nGain_mV, 2.5 * nGain_mV);
+            fV.get(s, l, c).setParLimits(7, 0., std * 4.0);
+            
             return true;
         } else {
             if (testMode) System.out.println(" initFitVNoiseParameters insufficient"+ " entries ");

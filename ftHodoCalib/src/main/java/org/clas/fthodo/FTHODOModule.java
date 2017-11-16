@@ -1010,8 +1010,8 @@ public class FTHODOModule extends JPanel implements CalibrationConstantsListener
         canvasNoise.cd(layCDM);
         if (histogramsFTHodo.H_NOISE_V.hasEntry(secSel, laySel, comSel)) {
             this.canvasNoise.draw(histogramsFTHodo.H_NOISE_V.get(secSel,laySel,comSel));
-            if (histogramsFTHodo.fV1.hasEntry(secSel,laySel,comSel)) {
-                this.canvasNoise.draw(histogramsFTHodo.fV1.get(secSel,laySel,comSel), "same S");
+            if (histogramsFTHodo.fV.hasEntry(secSel,laySel,comSel)) {
+                this.canvasNoise.draw(histogramsFTHodo.fV.get(secSel,laySel,comSel), "same S");
             }
             if (histogramsFTHodo.fitTwoPeaksV && histogramsFTHodo.fV2.hasEntry(secSel,laySel,comSel)) {
                 this.canvasNoise.draw(histogramsFTHodo.fV2.get(secSel,laySel,comSel), "same S");
