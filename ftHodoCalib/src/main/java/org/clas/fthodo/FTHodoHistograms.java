@@ -10,7 +10,6 @@ import org.jlab.detector.base.DetectorDescriptor;
 import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
-import org.jlab.groot.math.F1D;
 import org.jlab.groot.fitter.DataFitter;
 import org.jlab.groot.math.F1D;
 
@@ -50,8 +49,6 @@ public class FTHodoHistograms {
     DetectorCollection<F1D> fQ2 = new DetectorCollection<F1D>();
     DetectorCollection<F1D> fQMIP = new DetectorCollection<F1D>();
     DetectorCollection<F1D> fV = new DetectorCollection<F1D>();
-    DetectorCollection<F1D> fV1 = new DetectorCollection<F1D>();
-    DetectorCollection<F1D> fV2 = new DetectorCollection<F1D>();
     DetectorCollection<F1D> fVMIP = new DetectorCollection<F1D>();
     DetectorCollection<F1D> fT = new DetectorCollection<F1D>();
     // Functions (that are not used to fit)
@@ -416,18 +413,7 @@ public class FTHodoHistograms {
         
         if (initFitVNoiseParameters(s, l, c, H_NOISE_V.get(s, l, c))) {
             if (testMode) System.out.println(" Fitting fV ");
-            DataFitter.fit(fV.get(s, l, c), H_NOISE_V.get(s, l, c), fitOption);
-            //         H_NOISE_V.get(s,l,c).
-            //         fit(fV1.get(s,l,c),fitOption);
-            if (this.fitTwoPeaksV) {
-                if (testMode) System.out.println(" Fitting fV2 ");
-                DataFitter.fit(fV2.get(s, l, c), H_NOISE_V.get(s, l, c), fitOption);
-                //         H_NOISE_V.get(s,l,c).
-                //             fit(fV2.get(s,l,c),fitOption);
-            } else {
-                if (testMode) System.out.println(" Skipping fV2 Fit ");
-            }
-            
+            DataFitter.fit(fV.get(s, l, c), H_NOISE_V.get(s, l, c), fitOption);            
             if (testMode) {
                 System.out.println(" Fitted V Noise 1 & 2 (S,L,C) = ("
                                    + s + "," + l + "," + c + ")");
@@ -462,29 +448,31 @@ public class FTHodoHistograms {
                     H1.getAxis().max()
             ));
             
+            F1D f = fV.get(s, l, c);
+            
             // fit params 
-            fV.get(s, l, c).setParameter(0, ampl);
-            fV.get(s, l, c).setParameter(1, mean);
-            fV.get(s, l, c).setParameter(2, std);
+            f.setParameter(0, ampl);
+            f.setParameter(1, mean);
+            f.setParameter(2, std);
             
-            fV.get(s, l, c).setParameter(3, exp0);
-            fV.get(s, l, c).setParameter(4, -0.2);
+            f.setParameter(3, exp0);
+            f.setParameter(4, -0.2);
             
-            fV.get(s, l, c).setParameter(5, ampl / 2);
-            fV.get(s, l, c).setParameter(6, mean * 2);
-            fV.get(s, l, c).setParameter(7, std);
+            f.setParameter(5, ampl / 2);
+            f.setParameter(6, mean * 2);
+            f.setParameter(7, std);
             
             // fit limits            
-            fV.get(s, l, c).setParLimits(0, 0., ampl * 10);
-            fV.get(s, l, c).setParLimits(1, H1.getAxis().min(), 2 * nGain_mV);
-            fV.get(s, l, c).setParLimits(2, std / 2, std * 2.0);
+            f.setParLimits(0, 0., ampl * 10);
+            f.setParLimits(1, H1.getAxis().min(), 2 * nGain_mV);
+            f.setParLimits(2, std / 2, std * 2.0);
 
-            fV.get(s, l, c).setParLimits(3, 0.1 * exp0, 10.0 * exp0);
-            fV.get(s, l, c).setParLimits(4, -0.1, -1.0);
+            f.setParLimits(3, 0.1 * exp0, 10.0 * exp0);
+            f.setParLimits(4, -0.1, -1.0);
             
-            fV.get(s, l, c).setParLimits(5, 0., ampl);
-            fV.get(s, l, c).setParLimits(6, 1.5 * nGain_mV, 2.5 * nGain_mV);
-            fV.get(s, l, c).setParLimits(7, 0., std * 4.0);
+            f.setParLimits(5, 0., ampl);
+            f.setParLimits(6, 1.5 * nGain_mV, H1.getAxis().max());
+            f.setParLimits(7, 0., std * 4.0);
             
             return true;
         } else {
