@@ -1013,10 +1013,6 @@ public class FTHODOModule extends JPanel implements CalibrationConstantsListener
             if (histogramsFTHodo.fV.hasEntry(secSel,laySel,comSel)) {
                 this.canvasNoise.draw(histogramsFTHodo.fV.get(secSel,laySel,comSel), "same S");
             }
-            if (histogramsFTHodo.fitTwoPeaksV && histogramsFTHodo.fV2.hasEntry(secSel,laySel,comSel)) {
-                this.canvasNoise.draw(histogramsFTHodo.fV2.get(secSel,laySel,comSel), "same S");
-            }
-
         }
 
         //----------------------------------------
@@ -1025,12 +1021,8 @@ public class FTHODOModule extends JPanel implements CalibrationConstantsListener
         canvasNoise.cd(oppCDM);
         if (histogramsFTHodo.H_NOISE_V.hasEntry(secSel, oppSel, comSel)) {
             this.canvasNoise.draw(histogramsFTHodo.H_NOISE_V.get(secSel,oppSel,comSel));
-            if (histogramsFTHodo.fV1.hasEntry(secSel,oppSel,comSel)) {
-                this.canvasNoise.draw(histogramsFTHodo.fV1.get(secSel,oppSel,comSel), "same S");
-            }
-            if (histogramsFTHodo.fitTwoPeaksV
-                    && histogramsFTHodo.fV2.hasEntry(secSel,oppSel,comSel)) {
-                this.canvasNoise.draw(histogramsFTHodo.fV2.get(secSel,oppSel,comSel), "same S");
+            if (histogramsFTHodo.fV.hasEntry(secSel,oppSel,comSel)) {
+                this.canvasNoise.draw(histogramsFTHodo.fV.get(secSel,oppSel,comSel), "same S");
             }
         }
 
@@ -1220,12 +1212,8 @@ public class FTHODOModule extends JPanel implements CalibrationConstantsListener
         canvasVoltage.cd(layCDL);
         if (histogramsFTHodo.H_NOISE_V.hasEntry(secSel, laySel, comSel)) {
             this.canvasVoltage.draw(histogramsFTHodo.H_NOISE_V.get(secSel,laySel,comSel));
-            if (histogramsFTHodo.fV1.hasEntry(secSel,laySel,comSel)) {
-                this.canvasVoltage.draw(histogramsFTHodo.fV1.get(secSel,laySel,comSel), "same S");
-            }
-            if (histogramsFTHodo.fitTwoPeaksV
-                    && histogramsFTHodo.fV2.hasEntry(secSel,laySel,comSel)) {
-                this.canvasVoltage.draw(histogramsFTHodo.fV2.get(secSel,laySel,comSel), "same S");
+            if (histogramsFTHodo.fV.hasEntry(secSel,laySel,comSel)) {
+                this.canvasVoltage.draw(histogramsFTHodo.fV.get(secSel,laySel,comSel), "same S");
             }
         }
         //----------------------------------------
@@ -1234,12 +1222,8 @@ public class FTHODOModule extends JPanel implements CalibrationConstantsListener
         if (histogramsFTHodo.H_NOISE_V.hasEntry(secSel,oppSel,comSel)) {
             this.canvasVoltage.draw(histogramsFTHodo.H_NOISE_V.get(secSel,oppSel,comSel));
         }
-        if (histogramsFTHodo.fV1.hasEntry(secSel,oppSel,comSel)) {
-            this.canvasVoltage.draw(histogramsFTHodo.fV1.get(secSel,oppSel,comSel), "same S");
-        }
-        if (histogramsFTHodo.fitTwoPeaksV
-                && histogramsFTHodo.fV2.hasEntry(secSel,oppSel,comSel)) {
-            this.canvasVoltage.draw(histogramsFTHodo.fV2.get(secSel,oppSel,comSel), "same S");
+        if (histogramsFTHodo.fV.hasEntry(secSel,oppSel,comSel)) {
+            this.canvasVoltage.draw(histogramsFTHodo.fV.get(secSel,oppSel,comSel), "same S");
         }
 
         //----------------------------------------
@@ -2041,23 +2025,14 @@ public class FTHODOModule extends JPanel implements CalibrationConstantsListener
         double thisGain_mV = 0.0;
         if (histogramsFTHodo.useDefaultGain) {
             thisGain_mV = histogramsFTHodo.nGain_mV;
-        } else if (!histogramsFTHodo.fitTwoPeaksV) {
-            if (histogramsFTHodo.fV1.hasEntry(s, l, c)) {
-                double m1 = histogramsFTHodo.fV1.get(s, l, c).getParameter(1);
+        } else {
+            if (histogramsFTHodo.fV.hasEntry(s, l, c)) {
+                double m1 = histogramsFTHodo.fV.get(s, l, c).getParameter(1);
                 thisGain_mV = m1;
             }
             if (thisGain_mV < 0.5 * histogramsFTHodo.nGain_mV
                     || thisGain_mV > 1.6 * histogramsFTHodo.nGain_mV) {
                 thisGain_mV = 0.0;
-            }
-        } else if (histogramsFTHodo.fitTwoPeaksV) {
-            if (histogramsFTHodo.fV1.hasEntry(s, l, c)
-                    && histogramsFTHodo.fV2.hasEntry(s, l, c)) {
-                // note that the functions were added in the other
-                // order compared to the charge fits
-                double m2 = histogramsFTHodo.fV2.get(s, l, c).getParameter(1);
-                double m1 = histogramsFTHodo.fV1.get(s, l, c).getParameter(1);
-                thisGain_mV = m2 - m1;
             }
         }
         gain_mV[s][l][c] = thisGain_mV;
@@ -2070,26 +2045,12 @@ public class FTHODOModule extends JPanel implements CalibrationConstantsListener
         double gainErr_mV = 0.0;
         if (histogramsFTHodo.useDefaultGain) {
             gainErr_mV = 0.0;
-        } else if (!histogramsFTHodo.fitTwoPeaksV) {
-            if (histogramsFTHodo.fV1.hasEntry(s, l, c)
-                    && getGain_mV(s, l, c) > 0.0) {
-                double m1Error = histogramsFTHodo.fV1.get(s, l, c).parameter(1).error();
+        } else {
+            if (histogramsFTHodo.fV.hasEntry(s, l, c) && getGain_mV(s, l, c) > 0.0) {
+                double m1Error = histogramsFTHodo.fV.get(s, l, c).parameter(1).error();
                 gainErr_mV = m1Error;
             }
-        } else if (histogramsFTHodo.fitTwoPeaksV) {
-            if (histogramsFTHodo.fV1.hasEntry(s, l, c)
-                    && histogramsFTHodo.fV2.hasEntry(s, l, c)) {
-
-                // note that the functions were added in the other
-                // order to the charge fits
-                double m2Error = histogramsFTHodo.fV2.get(s, l, c).parameter(1).error();
-                double m1Error = histogramsFTHodo.fV1.get(s, l, c).parameter(1).error();
-                gainErr_mV = m2Error * m2Error + m1Error * m1Error;
-                gainErr_mV = sqrt(gainErr_mV);
-
-            }
         }
-
         errGain_mV[s][l][c] = gainErr_mV;
 
     }
